@@ -1,5 +1,17 @@
 # ember-cli Changelog
 
+### 1.13.13
+
+The following changes are required if you are upgrading from the previous
+version:
+
+#### Community Contributions
+
+- [#5061](https://github.com/ember-cli/ember-cli/pull/5061) Testem 0.9.11, @johanneswuerbach
+- [#5094](https://github.com/ember-cli/ember-cli/pull/5094) Remove deprecated `this.Funnel` usage, @stefanpenner
+- [#5075](https://github.com/ember-cli/ember-cli/pull/5075) Disable bundling, npm client seems to have issues, @stefanpenner
+- [#5104](https://github.com/ember-cli/ember-cli/pull/5104) Workaround for babel includePolyfill exception, @ef4
+
 ### 1.13.12
 
 The following changes are required if you are upgrading from the previous
