@@ -1,36 +1,39 @@
+/*jshint multistr: true */
+
 'use strict';
 
-var DestroyCommand  = require('../../../lib/commands/destroy');
-var Promise         = require('../../../lib/ext/promise');
-var Task            = require('../../../lib/models/task');
-var expect          = require('chai').expect;
-var commandOptions  = require('../../factories/command-options');
+var expect            = require('chai').expect;
+var EOL               = require('os').EOL;
+var MockProject       = require('../../helpers/mock-project');
+var processHelpString = require('../../helpers/process-help-string');
+var commandOptions    = require('../../factories/command-options');
+var Promise           = require('../../../lib/ext/promise');
+var Task              = require('../../../lib/models/task');
+var DestroyCommand    = require('../../../lib/commands/destroy');
 
 describe('generate command', function() {
-  var command;
+  var options, command;
 
   beforeEach(function() {
-    command = new DestroyCommand(commandOptions({
-      settings: {},
+    var project = new MockProject();
 
-      project:   {
-        name: function() {
-          return 'some-random-name';
-        },
+    project.isEmberCLIProject = function() {
+      return true;
+    };
 
-        isEmberCLIProject: function isEmberCLIProject() {
-          return true;
-        }
-      },
-
+    options = commandOptions({
+      project: project,
       tasks: {
         DestroyFromBlueprint: Task.extend({
+          project: project,
           run: function(options) {
             return Promise.resolve(options);
           }
         })
       }
-    }));
+    });
+
+    command = new DestroyCommand(options);
   });
 
   it('runs DestroyFromBlueprint with expected options', function() {
@@ -67,14 +70,35 @@ describe('generate command', function() {
             'For more details, use `ember help`.');
       });
   });
-  
+
+  it('does not throws errors when beforeRun is invoked without the blueprint name', function() {
+    expect(function() {
+      command.beforeRun([]);
+    }).to.not.throw();
+  });
+
   it('rethrows errors from beforeRun', function() {
-    return Promise.resolve(function(){ return command.beforeRun(['controller', 'foo']);})
+    return Promise.resolve(function() {
+      return command.beforeRun(['controller', 'foo']);
+    })
     .then(function() {
       expect(false, 'should not have called run');
     })
     .catch(function(error) {
       expect(error.message).to.equal('undefined is not a function');
+    });
+  });
+
+  describe('help', function() {
+    it('prints extra info', function() {
+      command.printDetailedHelp();
+
+      var output = options.ui.output;
+
+      var testString = processHelpString(EOL + '\
+  Run `ember help generate` to view a list of available blueprints.' + EOL);
+
+      expect(output).to.equal(testString);
     });
   });
 });

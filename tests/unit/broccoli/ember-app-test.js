@@ -1,12 +1,20 @@
 /* global escape */
+
 'use strict';
 
-var fs       = require('fs');
-var path     = require('path');
-var Project  = require('../../../lib/models/project');
-var EmberApp = require('../../../lib/broccoli/ember-app');
-var expect   = require('chai').expect;
-var stub     = require('../../helpers/stub').stub;
+var fs         = require('fs');
+var path       = require('path');
+var Project    = require('../../../lib/models/project');
+var expect     = require('chai').expect;
+var stub       = require('../../helpers/stub').stub;
+var proxyquire = require('proxyquire');
+
+var mergeTreesStub;
+var EmberApp = proxyquire('../../../lib/broccoli/ember-app', {
+  './merge-trees': function() {
+    return mergeTreesStub.apply(this, arguments);
+  }
+});
 
 describe('broccoli/ember-app', function() {
   var project, projectPath, emberApp, addonTreesForStub, addon;
@@ -28,6 +36,8 @@ describe('broccoli/ember-app', function() {
   beforeEach(function() {
     projectPath = path.resolve(__dirname, '../../fixtures/addon/simple');
     project = setupProject(projectPath);
+
+    mergeTreesStub = require('../../../lib/broccoli/merge-trees');
   });
 
   describe('constructor', function() {
@@ -49,6 +59,60 @@ describe('broccoli/ember-app', function() {
 
       expect(app.bowerDirectory).to.equal(project.bowerDirectory);
       expect(app.bowerDirectory).to.equal('bower_components');
+    });
+
+    it('should merge options with defaults to depth', function() {
+      var app = new EmberApp({
+        project: project,
+        foo: {
+          bar: ['baz']
+        },
+        fooz: {
+          bam: {
+            boo: ['default']
+          }
+        }
+      }, {
+        foo: {
+          bar: ['bizz']
+        },
+        fizz: 'fizz',
+        fooz: {
+          bam: {
+            boo: ['custom']
+          }
+        }
+      });
+
+      expect(app.options.foo).to.deep.eql({
+        bar: ['bizz']
+      });
+      expect(app.options.fizz).to.eql('fizz');
+      expect(app.options.fooz).to.eql({
+        bam: {
+          boo: ['custom']
+        }
+      });
+    });
+
+    it('should do the right thing when merging default object options', function() {
+      var app = new EmberApp({
+        project: project,
+      }, {
+        minifyJS: {
+          enabled: true,
+          options: {
+            exclusions: ['hey', 'you']
+          }
+        }
+      });
+
+      expect(app.options.minifyJS).to.deep.equal({
+        enabled: true,
+        options: {
+          exclusions: ['hey', 'you']
+        }
+      });
     });
 
     describe('_notifyAddonIncluded', function() {
@@ -122,6 +186,35 @@ describe('broccoli/ember-app', function() {
         var actual = emberApp.contentFor(config, defaultMatch, 'foo');
 
         expect(actual).to.equal('blammo\nblahzorz');
+      });
+
+      it('allows later addons to inspect previous content', function() {
+        var calledContent;
+
+        project.addons.push({
+          contentFor: function() {
+            return 'zero';
+          }
+        });
+
+        project.addons.push({
+          contentFor: function() {
+            return 'one';
+          }
+        });
+
+        project.addons.push({
+          contentFor: function(type, config, content) {
+            calledContent = content.slice();
+            content.pop();
+            return 'two';
+          }
+        });
+
+        var actual = emberApp.contentFor(config, defaultMatch, 'foo');
+
+        expect(calledContent).to.deep.equal(['zero', 'one']);
+        expect(actual).to.equal('zero\ntwo');
       });
     });
 
@@ -311,14 +404,6 @@ describe('broccoli/ember-app', function() {
 
           expect(addonTreesForStub.calledWith[0][0]).to.equal('app');
         });
-
-        it('styles calls addonTreesFor and merges with overwrite', function() {
-          var trees = emberApp.styles();
-
-          expect(addonTreesForStub.calledWith[0][0]).to.equal('styles');
-          expect(true, trees.inputTrees[0].inputTree.inputTrees.indexOf('batman') !== -1, 'contains addon tree');
-          expect(trees.inputTrees[0].inputTree.options.overwrite).to.equal(true);
-        });
       });
     });
     describe('postprocessTree is called properly', function() {
@@ -434,6 +519,71 @@ describe('broccoli/ember-app', function() {
         });
       });
 
+    });
+
+    describe('addonLintTree', function() {
+      beforeEach(function() {
+        addon = { };
+
+        project.initializeAddons = function() {
+          this.addons = [ addon ];
+        };
+
+        emberApp = new EmberApp({
+          project: project
+        });
+      });
+
+      it('does not throw an error if lintTree is not defined', function() {
+        emberApp.addonLintTree();
+      });
+
+      it('calls lintTree on the addon', function() {
+        var actualType, actualTree;
+
+        addon.lintTree = function(type, tree) {
+          actualType = type;
+          actualTree = tree;
+
+          return 'blazorz';
+        };
+
+        var assertionsWereRun;
+
+        mergeTreesStub = function(inputTree, options) {
+          expect(inputTree).to.deep.equal(['blazorz']);
+          expect(options).to.deep.equal({
+            overwrite: true,
+            annotation: 'TreeMerger (lint)'
+          });
+
+          assertionsWereRun = true;
+        };
+
+        emberApp.addonLintTree('blah', 'blam');
+
+        expect(actualType).to.equal('blah');
+        expect(actualTree).to.equal('blam');
+        expect(assertionsWereRun).to.be.true;
+      });
+
+      it('filters out tree if lintTree returns falsey', function() {
+        addon.lintTree = function() {
+          return false;
+        };
+
+        var assertionsWereRun;
+
+        mergeTreesStub = function(inputTree) {
+          expect(inputTree.length).to.equal(0);
+
+          assertionsWereRun = true;
+        };
+
+        emberApp.addonLintTree();
+
+        expect(assertionsWereRun).to.be.true;
+      });
     });
   });
 

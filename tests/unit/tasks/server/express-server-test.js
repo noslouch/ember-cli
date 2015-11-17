@@ -15,7 +15,6 @@ var EOL               = require('os').EOL;
 var nock              = require('nock');
 var express           = require('express');
 
-
 describe('express-server', function() {
   var subject, ui, project, proxy, nockProxy;
   nock.enableNetConnect();
@@ -49,12 +48,12 @@ describe('express-server', function() {
   });
 
   describe('displayHost', function() {
-    it('should use the specified host if not 0.0.0.0', function() {
+    it('should use the specified host if specified', function() {
       expect(subject.displayHost('1.2.3.4')).to.equal('1.2.3.4');
     });
 
-    it('should use the use localhost if specified host is 0.0.0.0', function() {
-      expect(subject.displayHost('0.0.0.0')).to.equal('localhost');
+    it('should use the use localhost if host is not specified', function() {
+      expect(subject.displayHost(undefined)).to.equal('localhost');
     });
   });
 
@@ -87,7 +86,7 @@ describe('express-server', function() {
 
     it('with ssl', function() {
       return subject.start({
-        host:  '0.0.0.0',
+        host: undefined,
         port: '1337',
         ssl: true,
         sslCert: 'tests/fixtures/ssl/server.crt',
@@ -102,7 +101,7 @@ describe('express-server', function() {
     it('with proxy', function() {
       return subject.start({
         proxy: 'http://localhost:3001/',
-        host:  '0.0.0.0',
+        host: undefined,
         port: '1337',
         baseURL: '/'
       }).then(function() {
@@ -115,7 +114,7 @@ describe('express-server', function() {
 
     it('without proxy', function() {
       return subject.start({
-        host:  '0.0.0.0',
+        host: undefined,
         port: '1337',
         baseURL: '/'
       }).then(function() {
@@ -127,7 +126,7 @@ describe('express-server', function() {
 
     it('with baseURL', function() {
       return subject.start({
-        host:  '0.0.0.0',
+        host: undefined,
         port: '1337',
         baseURL: '/foo'
       }).then(function() {
@@ -142,7 +141,7 @@ describe('express-server', function() {
       preexistingServer.listen(1337);
 
       return subject.start({
-        host:  '0.0.0.0',
+        host: undefined,
         port: '1337'
       })
         .then(function() {
@@ -161,7 +160,7 @@ describe('express-server', function() {
     it('starts with ssl if ssl option is passed', function() {
 
       return subject.start({
-        host:  'localhost',
+        host: 'localhost',
         port: '1337',
         ssl: true,
         sslCert: 'tests/fixtures/ssl/server.crt',
@@ -195,7 +194,7 @@ describe('express-server', function() {
 
       subject.start({
         proxy: 'http://localhost:3001/',
-        host:  '0.0.0.0',
+        host: undefined,
         port: '1337',
         baseURL: '/'
       })
@@ -228,7 +227,7 @@ describe('express-server', function() {
 
       subject.start({
         proxy: 'http://localhost:3001/',
-        host:  '0.0.0.0',
+        host: undefined,
         port: '1337',
         baseURL: '/'
       })
@@ -252,7 +251,7 @@ describe('express-server', function() {
       beforeEach(function() {
         return subject.start({
           proxy: 'http://localhost:3001/',
-          host:  '0.0.0.0',
+          host: undefined,
           port: '1337',
           baseURL: '/'
         });
@@ -334,7 +333,7 @@ describe('express-server', function() {
 
         return subject.start({
           proxy: 'http://api.lvh.me',
-          host:  '0.0.0.0',
+          host: undefined,
           port: '1337',
           baseURL: '/'
         });
@@ -447,7 +446,7 @@ describe('express-server', function() {
     describe('without proxy', function() {
       function startServer(baseURL) {
         return subject.start({
-          host:  '0.0.0.0',
+          host: undefined,
           port: '1337',
           baseURL: baseURL || '/'
         });
@@ -533,7 +532,7 @@ describe('express-server', function() {
               .get('/tests/test-file.txt')
               .set('accept', 'text/html')
               .expect(200)
-              .expect('some contents')
+              .expect(/some contents/)
               .expect('Content-Type', /text/)
               .end(function(err) {
                 if (err) {
@@ -661,7 +660,7 @@ describe('express-server', function() {
 
       it('calls processAddonMiddlewares upon start', function() {
         return subject.start({
-          host:  '0.0.0.0',
+          host: undefined,
           port: '1337'
         }).then(function() {
           expect(calls).to.equal(1);
@@ -693,7 +692,7 @@ describe('express-server', function() {
 
       it('calls serverMiddleware on the addons on start', function() {
         return subject.start({
-          host:  '0.0.0.0',
+          host: undefined,
           port: '1337'
         }).then(function() {
           expect(firstCalls).to.equal(1);
@@ -703,7 +702,7 @@ describe('express-server', function() {
 
       it('calls serverMiddleware on the addons on restart', function() {
         return subject.start({
-          host:  '0.0.0.0',
+          host: undefined,
           port: '1337'
         }).then(function() {
           subject.changedFiles = ['bar.js'];
@@ -744,7 +743,7 @@ describe('express-server', function() {
 
       it('waits for async middleware to complete before the next middleware', function(){
         return subject.start({
-          host:  '0.0.0.0',
+          host: undefined,
           port: '1337'
         }).then(function() {
           expect(order[0]).to.equal('first');
@@ -766,7 +765,7 @@ describe('express-server', function() {
       });
       it('up to server start', function(){
         return subject.start({
-          host: '0.0.0.0',
+          host: undefined,
           port: '1337'
         })
           .catch(function(reason){
@@ -791,7 +790,7 @@ describe('express-server', function() {
 
       it('calls processAppMiddlewares upon start', function() {
         var realOptions = {
-          host:  '0.0.0.0',
+          host: undefined,
           port: '1337'
         };
 
@@ -803,7 +802,7 @@ describe('express-server', function() {
 
       it('calls processAppMiddlewares upon restart', function() {
         var realOptions = {
-          host:  '0.0.0.0',
+          host: undefined,
           port: '1337'
         };
 
@@ -831,7 +830,7 @@ describe('express-server', function() {
         };
 
         var realOptions = {
-          host:  '0.0.0.0',
+          host: undefined,
           port: '1337'
         };
 
@@ -849,7 +848,7 @@ describe('express-server', function() {
         };
 
         return subject.start({
-          host:  '0.0.0.0',
+          host: undefined,
           port: '1337'
         }).then(function() {
           subject.serverWatcher.emit('change', 'foo.txt');
@@ -864,7 +863,7 @@ describe('express-server', function() {
         };
 
         return subject.start({
-          host:  '0.0.0.0',
+          host: undefined,
           port: '1337'
         }).then(function() {
           subject.serverWatcher.emit('change', 'foo.txt');
@@ -899,7 +898,7 @@ describe('express-server', function() {
         var originalHttpServer;
         var originalApp;
         return subject.start({
-          host:  '0.0.0.0',
+          host: undefined,
           port: '1337'
         }).then(function() {
           ui.output = '';
@@ -920,7 +919,7 @@ describe('express-server', function() {
         var originalHttpServer;
         var originalApp;
         return subject.start({
-          host:  '0.0.0.0',
+          host: undefined,
           port: '1337'
         }).then(function() {
           originalHttpServer = subject.httpServer;
@@ -947,7 +946,7 @@ describe('express-server', function() {
           calls++;
         });
         return subject.start({
-          host:  '0.0.0.0',
+          host: undefined,
           port: '1337'
         }).then(function() {
           subject.changedFiles = ['bar.js'];

@@ -255,6 +255,9 @@ describe('Acceptance: ember generate in-addon-dummy', function() {
       assertFile('tests/dummy/app/templates/foo.hbs', {
         contains: '{{outlet}}'
       });
+      assertFile('tests/dummy/app/router.js', {
+        contains: "this.route('foo');"
+      });
       assertFileToNotExist('app/templates/foo.js');
       assertFileToNotExist('tests/unit/routes/foo-test.js');
     });
@@ -271,6 +274,12 @@ describe('Acceptance: ember generate in-addon-dummy', function() {
       assertFileToNotExist('app/routes/foo/bar.js');
       assertFile('tests/dummy/app/templates/foo/bar.hbs', {
         contains: '{{outlet}}'
+      });
+      assertFile('tests/dummy/app/router.js', {
+        contains: [
+          "this.route('foo', function() {",
+          "this.route('bar');",
+        ]
       });
       assertFileToNotExist('tests/unit/routes/foo/bar-test.js');
     });
@@ -336,13 +345,13 @@ describe('Acceptance: ember generate in-addon-dummy', function() {
   it('dummy initializer foo', function() {
     return generateInAddon(['initializer', 'foo', '--dummy']).then(function() {
       assertFile('tests/dummy/app/initializers/foo.js', {
-        contains: "export function initialize(/* container, application */) {" + EOL +
+        contains: "export function initialize(/* application */) {" + EOL +
                   "  // application.inject('route', 'foo', 'service:foo');" + EOL +
                   "}" + EOL +
                   "" + EOL+
                   "export default {" + EOL +
                   "  name: 'foo'," + EOL +
-                  "  initialize: initialize" + EOL +
+                  "  initialize" + EOL +
                   "};"
       });
       assertFileToNotExist('app/initializers/foo.js');
@@ -353,13 +362,13 @@ describe('Acceptance: ember generate in-addon-dummy', function() {
   it('dummy initializer foo/bar', function() {
     return generateInAddon(['initializer', 'foo/bar', '--dummy']).then(function() {
       assertFile('tests/dummy/app/initializers/foo/bar.js', {
-        contains: "export function initialize(/* container, application */) {" + EOL +
+        contains: "export function initialize(/* application */) {" + EOL +
                   "  // application.inject('route', 'foo', 'service:foo');" + EOL +
                   "}" + EOL +
                   "" + EOL+
                   "export default {" + EOL +
                   "  name: 'foo/bar'," + EOL +
-                  "  initialize: initialize" + EOL +
+                  "  initialize" + EOL +
                   "};"
       });
       assertFileToNotExist('app/initializers/foo/bar.js');
@@ -501,11 +510,11 @@ describe('Acceptance: ember generate in-addon-dummy', function() {
         contains: [
           "import DS from 'ember-data';",
           'export default DS.Transform.extend({' + EOL +
-          '  deserialize: function(serialized) {' + EOL +
+          '  deserialize(serialized) {' + EOL +
           '    return serialized;' + EOL +
           '  },' + EOL +
           EOL +
-          '  serialize: function(deserialized) {' + EOL +
+          '  serialize(deserialized) {' + EOL +
           '    return deserialized;' + EOL +
           '  }' + EOL +
           '});'
@@ -522,11 +531,11 @@ describe('Acceptance: ember generate in-addon-dummy', function() {
         contains: [
           "import DS from 'ember-data';",
           'export default DS.Transform.extend({' + EOL +
-          '  deserialize: function(serialized) {' + EOL +
+          '  deserialize(serialized) {' + EOL +
           '    return serialized;' + EOL +
           '  },' + EOL +
           '' + EOL +
-          '  serialize: function(deserialized) {' + EOL +
+          '  serialize(deserialized) {' + EOL +
           '    return deserialized;' + EOL +
           '  }' + EOL +
           '});'
@@ -682,8 +691,18 @@ describe('Acceptance: ember generate in-addon-dummy', function() {
                     "    res.status(204).end();" + EOL +
                     "  });" + EOL +
                     EOL +
+                    "  // The POST and PUT call will not contain a request body" + EOL +
+                    "  // because the body-parser is not included by default." + EOL +
+                    "  // To use req.body, run:" + EOL +
+                    EOL +
+                    "  //    npm install --save-dev body-parser" + EOL +
+                    EOL +
+                    "  // After installing, you need to `use` the body-parser for" + EOL +
+                    "  // this mock uncommenting the following line:" + EOL +
+                    "  //" + EOL +
+                    "  //app.use('/api/foo', require('body-parser'));" + EOL +
                     "  app.use('/api/foo', fooRouter);" + EOL +
-                    "};"
+                    "};" + EOL
         });
         assertFile('server/.jshintrc', {
           contains: '{' + EOL + '  "node": true' + EOL + '}'
@@ -731,8 +750,18 @@ describe('Acceptance: ember generate in-addon-dummy', function() {
                     "    res.status(204).end();" + EOL +
                     "  });" + EOL +
                     EOL +
+                    "  // The POST and PUT call will not contain a request body" + EOL +
+                    "  // because the body-parser is not included by default." + EOL +
+                    "  // To use req.body, run:" + EOL +
+                    EOL +
+                    "  //    npm install --save-dev body-parser" + EOL +
+                    EOL +
+                    "  // After installing, you need to `use` the body-parser for" + EOL +
+                    "  // this mock uncommenting the following line:" + EOL +
+                    "  //" + EOL +
+                    "  //app.use('/api/foo-bar', require('body-parser'));" + EOL +
                     "  app.use('/api/foo-bar', fooBarRouter);" + EOL +
-                    "};"
+                    "};" + EOL
         });
         assertFile('server/.jshintrc', {
           contains: '{' + EOL + '  "node": true' + EOL + '}'

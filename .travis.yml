@@ -1,25 +1,23 @@
 sudo: false
-env:
-  - NODE_VERSION=0.10
-  - NODE_VERSION=0.12
-  - NODE_VERSION=iojs
-
-before_install:
-  - "npm config set spin false"
-  - "npm install -g npm@^2"
-  - "npm config set spin false"
+language: node_js
+node_js:
+  - "0.10"
+  - "0.12"
+  - "iojs"
+  - "4.2"
+  - "5"
 
 os:
-  - osx
   - linux
 script: npm run-script test-all:cover
+before_install:
+  - test $TRAVIS_OS_NAME = "osx" && brew update && brew install nvm && source $(brew --prefix nvm)/nvm.sh && brew install phantomjs || test $TRAVIS_OS_NAME = "linux"
+  - npm config set spin false
 install:
-  - test $TRAVIS_OS_NAME = "osx" && brew install nvm && source $(brew --prefix nvm)/nvm.sh || test $TRAVIS_OS_NAME = "linux"
-  - nvm install $NODE_VERSION
   - node --version
   - npm --version
   - git --version
-  - npm install
+  - npm install --no-optional
 
 after_script:
   - cat coverage/lcov.info | codeclimate
