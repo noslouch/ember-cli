@@ -1,8 +1,11 @@
 'use strict';
 
-var path  = require('path');
-var ember = require('../helpers/ember');
-var root  = process.cwd();
+var path       = require('path');
+var runCommand = require('../helpers/run-command');
+
+var root       = process.cwd();
+var ember      = path.join(root, 'bin', 'ember');
+
 
 describe('Acceptance: missing a before/after addon', function() {
   before(function() {
@@ -14,6 +17,6 @@ describe('Acceptance: missing a before/after addon', function() {
   });
 
   it('does not break ember-cli', function() {
-    return ember(['help']);
+    return runCommand(ember, 'help');
   });
 });

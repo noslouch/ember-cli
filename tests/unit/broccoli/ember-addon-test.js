@@ -60,4 +60,5 @@ describe('EmberAddon', function() {
       }
     });
   });
+
 });

@@ -7,6 +7,6 @@ moduleFor('service:<%= dasherizedModuleName %>', '<%= friendlyTestDescription %>
 
 // Replace this with your real tests.
 test('it exists', function(assert) {
-  let service = this.subject();
+  var service = this.subject();
   assert.ok(service);
 });

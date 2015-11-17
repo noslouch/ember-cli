@@ -7,9 +7,9 @@ moduleForModel('<%= dasherizedModuleName %>', '<%= friendlyTestDescription %>', 
 
 // Replace this with your real tests.
 test('it serializes records', function(assert) {
-  let record = this.subject();
+  var record = this.subject();
 
-  let serializedRecord = record.serialize();
+  var serializedRecord = record.serialize();
 
   assert.ok(serializedRecord);
 });

@@ -58,15 +58,10 @@ module.exports = function assertFile(file, options) {
         pass = contains(actual, expected);
       }
 
-      var message =  'expected: `' + file + '`';
-      if (pass) {
-        expect(true).to.equal(true, EOL + EOL + 'expected ' + file + ':' + EOL + EOL +
-                                    actual +
-                                    EOL + 'to contain:' + EOL + EOL +
-                                    expected + EOL);
-      } else {
-        throw new EqualityError(message, actual, expected);
-      }
+      expect(pass).to.equal(true, EOL + EOL + 'expected ' + file + ':' + EOL + EOL +
+                                  actual +
+                                  EOL + 'to contain:' + EOL + EOL +
+                                  expected + EOL);
     });
   }
 
@@ -87,15 +82,3 @@ module.exports = function assertFile(file, options) {
     });
   }
 };
-
-function EqualityError(message, actual, expected) {
-  this.message = message;
-  this.actual = actual;
-  this.expected = expected;
-  this.showDiff = true;
-  Error.captureStackTrace(this, module.exports);
-}
-
-EqualityError.prototype = Object.create(Error.prototype);
-EqualityError.prototype.name = 'EqualityError';
-EqualityError.prototype.constructor = EqualityError;

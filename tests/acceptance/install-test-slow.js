@@ -14,7 +14,7 @@ var tmproot    = path.join(root, 'tmp');
 var expect     = require('chai').expect;
 
 describe('Acceptance: ember install', function() {
-  this.timeout(60000);
+  this.timeout(30000);
   var tmpdir;
 
   before(function() {
@@ -54,6 +54,7 @@ describe('Acceptance: ember install', function() {
 
   it('installs addons via npm and runs generators', function() {
     return installAddon(['ember-cli-fastclick', 'ember-cli-photoswipe']).then(function(result) {
+
       assertFile('package.json', {
         contains: [
           /"ember-cli-fastclick": ".*"/,

@@ -1,11 +1,11 @@
 import DS from 'ember-data';
 
 export default DS.Transform.extend({
-  deserialize(serialized) {
+  deserialize: function(serialized) {
     return serialized;
   },
 
-  serialize(deserialized) {
+  serialize: function(deserialized) {
     return deserialized;
   }
 });

@@ -1,8 +1,8 @@
 /*jshint node:true*/
 
-var stringUtil  = require('ember-cli-string-utils');
+var stringUtil  = require('../../lib/utilities/string');
 var SilentError = require('silent-error');
-var pathUtil    = require('ember-cli-path-utils');
+var pathUtil    = require('../../lib/utilities/path');
 
 module.exports = {
   description: 'Generates an ember-data adapter.',

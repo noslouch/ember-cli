@@ -7,8 +7,6 @@ var Cli           = require('../../lib/cli');
 module.exports = function ember(args) {
   var cli;
 
-  args.push('--disable-analytics');
-  args.push('--watcher=node');
   cli = new Cli({
     inputStream:  [],
     outputStream: [],

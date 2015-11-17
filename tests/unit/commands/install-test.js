@@ -2,67 +2,71 @@
 
 var expect         = require('chai').expect;
 var stub           = require('../../helpers/stub').stub;
-var MockProject    = require('../../helpers/mock-project');
 var commandOptions = require('../../factories/command-options');
+var InstallCommand = require('../../../lib/commands/install');
 var Task           = require('../../../lib/models/task');
+var Project        = require('../../../lib/models/project');
 var Promise        = require('../../../lib/ext/promise');
 var AddonInstall   = require('../../../lib/tasks/addon-install');
-var InstallCommand = require('../../../lib/commands/install');
 
 describe('install command', function() {
-  var generateBlueprintInstance, npmInstance;
-  var command, tasks;
+  var command, options, tasks, generateBlueprintInstance, npmInstance;
 
   beforeEach(function() {
-    var project = new MockProject();
-
-    project.isEmberCLIProject = function() {
-      return true;
-    };
-
-    project.initializeAddons = function() {};
-    project.reloadAddons = function() {
-      this.addons = [
-        {
-          pkg: {
-            name: 'ember-data',
-          }
-        },
-        {
-          pkg: {
-            name: 'ember-cli-cordova',
-            'ember-addon': {
-              defaultBlueprint: 'cordova-starter-kit'
-            }
-          }
-        },
-        {
-          pkg: {
-            name: 'ember-cli-qunit'
-          }
-        }
-      ];
-    };
-
     tasks = {
       AddonInstall: AddonInstall,
       NpmInstall: Task.extend({
-        project: project,
         init: function() {
           npmInstance = this;
         }
       }),
 
       GenerateFromBlueprint: Task.extend({
-        project: project,
         init: function() {
           generateBlueprintInstance = this;
         }
       })
     };
 
-    var options = commandOptions({
-      project: project,
+    options = commandOptions({
+      settings: {},
+
+      project: {
+        name: function() {
+          return 'some-random-name';
+        },
+
+        isEmberCLIProject: function() {
+          return true;
+        },
+
+        initializeAddons: function() { },
+        reloadAddons: function() {
+          this.addons = [
+            {
+              pkg: {
+                name: 'ember-data',
+              }
+            },
+            {
+              pkg: {
+                name: 'ember-cli-cordova',
+                'ember-addon': {
+                  defaultBlueprint: 'cordova-starter-kit'
+                }
+              }
+            },
+            {
+              pkg: {
+                name: 'ember-cli-qunit'
+              }
+            }
+          ];
+        },
+
+        findAddonByName: Project.prototype.findAddonByName
+      },
+
       tasks: tasks
     });
 
@@ -116,13 +120,13 @@ describe('install command', function() {
     it('fails to install second argument for unknown addon', function() {
       return command.validateAndRun(['ember-cli-cordova', 'com.ember.test']).then(function() {
         expect(false, 'should reject with error');
-      }).catch(function(error) {
+      }).catch(function(err) {
         var generateRun = tasks.GenerateFromBlueprint.prototype.run;
         expect(generateRun.calledWith[0][0].ignoreMissingMain, true);
         expect(generateRun.calledWith[0][0].args).to.deep.equal([
           'cordova-starter-kit'
         ], 'expected generate blueprint called with correct args');
-        expect(error.message).to.equal(
+        expect(err.message).to.equal(
           'Install failed. Could not find addon with name: com.ember.test',
           'expected error to have helpful message'
         );
@@ -164,8 +168,8 @@ describe('install command', function() {
     it('gives helpful message if it can\'t find the addon', function() {
       return command.validateAndRun(['unknown-addon']).then(function() {
         expect(false, 'should reject with error');
-      }).catch(function(error) {
-        expect(error.message).to.equal(
+      }).catch(function(err) {
+        expect(err.message).to.equal(
           'Install failed. Could not find addon with name: unknown-addon',
           'expected error to have helpful message'
         );
@@ -177,12 +181,12 @@ describe('install command', function() {
     it('gives a helpful message if no arguments are passed', function() {
       return command.validateAndRun([]).then(function() {
         expect(false, 'should reject with error');
-      }).catch(function(error) {
-        expect(error.message).to.equal(
-          'The `install` command must take an argument with the name ' +
-          'of an ember-cli addon. For installing all npm and bower ' +
-          'dependencies you can run `npm install && bower install`.',
-          'expect error to have a helpful message'
+      }).catch(function(err) {
+        var msg = 'The `install` command must take an argument with the name ';
+        msg    += 'of an ember-cli addon. For installing all npm and bower ';
+        msg    += 'dependencies you can run `npm install && bower install`.';
+        expect(err.message).to.equal(
+          msg, 'expect error to have a helpful message'
         );
       });
     });

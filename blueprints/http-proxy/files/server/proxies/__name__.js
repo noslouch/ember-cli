@@ -1,4 +1,3 @@
-/*jshint node:true*/
 var proxyPath = '/<%=camelizedModuleName %>';
 
 module.exports = function(app) {

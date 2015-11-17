@@ -10,19 +10,16 @@ var conf              = require('./conf');
 var existsSync        = require('exists-sync');
 var copy              = Promise.denodeify(require('cpr'));
 var root              = process.cwd();
-var exec              = Promise.denodeify(require('child_process').exec);
 
-var runCommandOptions = {
-  // Note: We must override the default logOnFailure logging, because we are
-  // not inside a test.
-  log: function() {
+var onOutput = {
+  onOutput: function() {
     return; // no output for initial application build
   }
 };
 
 function handleResult(result) {
-  if (result.output) { console.log(result.output.join('\n')); }
-  if (result.errors) { console.log(result.errors.join('\n')); }
+  console.log(result.output.join('\n'));
+  console.log(result.errors.join('\n'));
   throw result;
 }
 
@@ -57,7 +54,7 @@ function symLinkDir(projectPath, from, to) {
 
 function applyCommand(command, name /*, ...flags*/) {
   var flags = [].slice.call(arguments, 2, arguments.length);
-  var args = [path.join('..', 'bin', 'ember'), command, '--disable-analytics', '--watcher=node', '--skip-git', name, runCommandOptions];
+  var args = [path.join('..', 'bin', 'ember'), command, '--skip-git', name, onOutput];
 
   flags.forEach(function(flag) {
     args.splice(2, 0, flag);
@@ -88,14 +85,13 @@ function createTestTargets(projectName, options) {
   options = options || {};
   options.command = options.command || 'new';
 
-  var noNodeModules = !downloaded('node_modules');
   // Fresh install
-  if (noNodeModules && !downloaded('bower_components')) {
+  if (!downloaded('node_modules') && !downloaded('bower_components')) {
     command = function() {
       return applyCommand(options.command, projectName);
     };
     // bower_components but no node_modules
-  } else if (noNodeModules && downloaded('bower_components')) {
+  } else if (!downloaded('node_modules') && downloaded('bower_components')) {
     command = function() {
       return applyCommand(options.command, projectName, '--skip-bower');
     };
@@ -112,17 +108,8 @@ function createTestTargets(projectName, options) {
   }
 
   return createTmp(function() {
-    return command().
-      catch(handleResult).
-      then(function(value) {
-        if (noNodeModules) {
-          return exec('npm install ember-disable-prototype-extensions').then(function() {
-            return value;
-          });
-        }
-
-        return value;
-    });
+    return command();
+  }).catch(handleResult).finally(function () {
   });
 }
 

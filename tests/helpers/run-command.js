@@ -6,7 +6,6 @@ var chalk          = require('chalk');
 var spawn          = require('child_process').spawn;
 var defaults       = require('lodash/object/defaults');
 var killCliProcess = require('./kill-cli-process');
-var logOnFailure   = require('./log-on-failure');
 
 module.exports = function run(/* command, args, options */) {
   var command = arguments[0];
@@ -18,29 +17,19 @@ module.exports = function run(/* command, args, options */) {
   }
 
   options = defaults(options, {
-    // If true, pass through stdout/stderr.
-    // If false, only pass through stdout/stderr if the current test fails.
-    verbose: false,
+    verbose: true,
 
     onOutput: function(string) {
-      options.log(string);
+      if (options.verbose) { console.log(string); }
     },
 
     onError: function(string) {
-      options.log(chalk.red(string));
-    },
-
-    log: function(string) {
-      if (options.verbose) {
-        console.log(string);
-      } else {
-        logOnFailure(string);
-      }
+      if (options.verbose) { console.error(chalk.red(string)); }
     }
   });
 
   return new RSVP.Promise(function(resolve, reject) {
-    options.log('      Running: ' + command + ' ' + args.join(' ') + ' in: ' + process.cwd());
+    console.log('      Running: ' + command + ' ' + args.join(' '));
 
     var opts = {};
     if (process.platform === 'win32') {
@@ -93,9 +82,8 @@ module.exports = function run(/* command, args, options */) {
       result.errors.push(string);
     });
 
-    child.on('close', function (code, signal) {
+    child.on('close', function (code) {
       result.code = code;
-      result.signal = signal;
 
       if (code === 0) {
         resolve(result);

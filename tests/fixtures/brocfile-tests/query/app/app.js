@@ -13,3 +13,4 @@ var App = Ember.Application.extend({
 loadInitializers(App, 'query');
 
 export default App;
+

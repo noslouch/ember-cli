@@ -1,12 +1,10 @@
-/*jshint multistr: true */
-
 'use strict';
 
 var fs                = require('fs-extra');
+var Blueprint         = require('../../../lib/models/blueprint');
 var Task              = require('../../../lib/models/task');
 var MockProject       = require('../../helpers/mock-project');
 var MockUI            = require('../../helpers/mock-ui');
-var processHelpString = require('../../helpers/process-help-string');
 var expect            = require('chai').expect;
 var path              = require('path');
 var glob              = require('glob');
@@ -18,36 +16,6 @@ var root              = process.cwd();
 var tmp               = require('tmp-sync');
 var tmproot           = path.join(root, 'tmp');
 var SilentError       = require('silent-error');
-var stub              = require('../../helpers/stub').stub;
-var proxyquire        = require('proxyquire');
-var existsSync        = require('exists-sync');
-var MarkdownColor     = require('../../../lib/utilities/markdown-color');
-var assign            = require('lodash/object/assign');
-
-var existsSyncStub;
-var readdirSyncStub;
-var readFileSyncStub;
-var renderFileStub;
-var Blueprint = proxyquire('../../../lib/models/blueprint', {
-  'exists-sync': function() {
-    return existsSyncStub.apply(this, arguments);
-  },
-  'fs-extra': {
-    readdirSync: function() {
-      return readdirSyncStub.apply(this, arguments);
-    },
-    readFileSync: function() {
-      return readFileSyncStub.apply(this, arguments);
-    }
-  },
-  '../utilities/markdown-color': function() {
-    return {
-      renderFile: function() {
-        return renderFileStub.apply(this, arguments);
-      }
-    };
-  }
-});
 
 var defaultBlueprints = path.resolve(__dirname, '..', '..', '..', 'blueprints');
 var fixtureBlueprints = path.resolve(__dirname, '..', '..', 'fixtures', 'blueprints');
@@ -67,11 +35,6 @@ var basicBlueprintFiles = [
 describe('Blueprint', function() {
   beforeEach(function() {
     Blueprint.ignoredFiles = defaultIgnoredFiles;
-
-    existsSyncStub = existsSync;
-    readdirSyncStub = fs.readdirSync;
-    readFileSyncStub = fs.readFileSync;
-    renderFileStub = MarkdownColor.prototype.renderFile;
   });
 
   describe('.mapFile', function() {
@@ -196,306 +159,31 @@ describe('Blueprint', function() {
   });
 
   describe('.list', function() {
-    beforeEach(function() {
-      existsSyncStub = function(path) {
-        return path.indexOf('package.json') === -1;
-      };
-
-      stub(Blueprint, 'defaultLookupPaths', []);
-      stub(Blueprint, 'load', function(blueprintPath) {
-        return {
-          name: path.basename(blueprintPath)
-        };
-      }, true);
-    });
-
-    afterEach(function() {
-      if (Blueprint.defaultLookupPaths.restore) {
-        Blueprint.defaultLookupPaths.restore();
-      }
-      if (Blueprint.load.restore) {
-        Blueprint.load.restore();
-      }
-    });
-
     it('returns a list of blueprints grouped by lookup path', function() {
-      readdirSyncStub = function() {
-        return ['test1', 'test2'];
+      var list = Blueprint.list({ paths: [fixtureBlueprints] });
+      var actual = list[0];
+      var expected = {
+        source: 'fixtures',
+        blueprints: [{
+          name: 'basic',
+          description: 'A basic blueprint',
+          overridden: false
+        }, {
+          name: 'basic_2',
+          description: 'Another basic blueprint',
+          overridden: false
+        }, {
+          name: 'exporting-object',
+          description: 'A blueprint that exports an object',
+          overridden: false
+        }, {
+          name: 'with-templating',
+          description: 'A blueprint with templating',
+          overridden: false
+        }]
       };
 
-      var list = Blueprint.list({ paths: ['test0/blueprints'] });
-
-      expect(list[0]).to.deep.equal({
-        source: 'test0',
-        blueprints: [
-          {
-            name: 'test1',
-            overridden: false
-          },
-          {
-            name: 'test2',
-            overridden: false
-          }
-        ]
-      });
-    });
-
-    it('overrides a blueprint of the same name from another package', function() {
-      readdirSyncStub = function() {
-        return ['test2'];
-      };
-
-      var list = Blueprint.list({
-        paths: [
-          'test0/blueprints',
-          'test1/blueprints'
-        ]
-      });
-
-      expect(list[0]).to.deep.equal({
-        source: 'test0',
-        blueprints: [
-          {
-            name: 'test2',
-            overridden: false
-          }
-        ]
-      });
-      expect(list[1]).to.deep.equal({
-        source: 'test1',
-        blueprints: [
-          {
-            name: 'test2',
-            overridden: true
-          }
-        ]
-      });
-    });
-  });
-
-  describe('help', function() {
-    it('handles overridden', function() {
-      var blueprint = new Blueprint('path/to/my-blueprint');
-
-      assign(blueprint, {
-        overridden: true
-      });
-
-      var output = blueprint.printBasicHelp();
-
-      var testString = processHelpString('\
-      \u001b[90m(overridden) my-blueprint\u001b[39m');
-
-      expect(output).to.equal(testString);
-    });
-
-    it('handles all possible options', function() {
-      var blueprint = new Blueprint('path/to/my-blueprint');
-
-      var availableOptions = [
-        {
-          name: 'test-option',
-          values: ['x', 'y'],
-          default: 'my-def-val',
-          required: true,
-          aliases: ['a', { b: 'c' }],
-          description: 'option desc'
-        },
-        {
-          name: 'test-type',
-          type: Boolean,
-          aliases: ['a']
-        }
-      ];
-
-      assign(blueprint, {
-        description: 'a paragraph',
-        availableOptions: availableOptions,
-        anonymousOptions: ['anon-test'],
-        printDetailedHelp: function() {
-          expect(arguments[0]).to.equal(availableOptions);
-          return 'some details';
-        },
-        dontShowThis: 'test'
-      });
-
-      var output = blueprint.printBasicHelp(true);
-
-      var testString = processHelpString('\
-      my-blueprint \u001b[33m<anon-test>\u001b[39m \u001b[36m<options...>\u001b[39m' + EOL + '\
-        \u001b[90ma paragraph\u001b[39m' + EOL + '\
-        \u001b[36m--test-option\u001b[39m\u001b[36m=x|y\u001b[39m \u001b[36m(Default: my-def-val)\u001b[39m \u001b[36m(Required)\u001b[39m' + EOL + '\
-          \u001b[90maliases: -a <value>, -b (--test-option=c)\u001b[39m option desc' + EOL + '\
-        \u001b[36m--test-type\u001b[39m' + EOL + '\
-          \u001b[90maliases: -a\u001b[39m' + EOL + '\
-some details');
-
-      expect(output).to.equal(testString);
-    });
-
-    it('handles all possible options json', function() {
-      var blueprint = new Blueprint('path/to/my-blueprint');
-
-      var availableOptions = [
-        {
-          type: 'my-string-type',
-          showAnything: true
-        },
-        {
-          type: function myFunctionType() {}
-        }
-      ];
-
-      assign(blueprint, {
-        description: 'a paragraph',
-        overridden: false,
-        availableOptions: availableOptions,
-        anonymousOptions: ['anon-test'],
-        printDetailedHelp: function() {
-          expect(arguments[0]).to.equal(availableOptions);
-          return 'some details';
-        },
-        dontShowThis: true
-      });
-
-      var json = blueprint.getJson(true);
-
-      expect(json).to.deep.equal({
-        name: 'my-blueprint',
-        description: 'a paragraph',
-        overridden: false,
-        availableOptions: [
-          {
-            type: 'my-string-type',
-            showAnything: true
-          },
-          {
-            type: 'myFunctionType'
-          }
-        ],
-        anonymousOptions: ['anon-test'],
-        detailedHelp: 'some details'
-      });
-    });
-
-    it('handles the simplest blueprint, to test else skipping', function() {
-      var blueprint = new Blueprint('path/to/my-blueprint');
-
-      var output = blueprint.printBasicHelp();
-
-      var testString = processHelpString('\
-      my-blueprint \u001b[33m<name>\u001b[39m');
-
-      expect(output).to.equal(testString);
-    });
-
-    it('handles the simplest option, to test else skipping', function() {
-      var blueprint = new Blueprint('path/to/my-blueprint');
-
-      assign(blueprint, {
-        availableOptions: [{}]
-      });
-
-      var output = blueprint.printBasicHelp();
-
-      var testString = processHelpString('\
-      my-blueprint \u001b[33m<name>\u001b[39m \u001b[36m<options...>\u001b[39m' + EOL + '\
-        \u001b[36m--undefined\u001b[39m');
-
-      expect(output).to.equal(testString);
-    });
-
-    it('don\'t print prefix if option aliases is empty', function() {
-      var blueprint = new Blueprint('path/to/my-blueprint');
-
-      assign(blueprint, {
-        availableOptions: [
-          {
-            aliases: []
-          }
-        ]
-      });
-
-      var output = blueprint.printBasicHelp();
-
-      var testString = processHelpString('\
-      my-blueprint \u001b[33m<name>\u001b[39m \u001b[36m<options...>\u001b[39m' + EOL + '\
-        \u001b[36m--undefined\u001b[39m');
-
-      expect(output).to.equal(testString);
-    });
-
-    it('if blueprint nulls printDetailedHelp, don\'t call it, we should deprecate this', function() {
-      var blueprint = new Blueprint('path/to/my-blueprint');
-
-      assign(blueprint, {
-        printDetailedHelp: null
-      });
-
-      var output = blueprint.printBasicHelp(true);
-
-      var testString = processHelpString('\
-      my-blueprint \u001b[33m<name>\u001b[39m');
-
-      expect(output).to.equal(testString);
-    });
-
-    it('if blueprint nulls printDetailedHelp, don\'t call it json, we should deprecate this', function() {
-      var blueprint = new Blueprint('path/to/my-blueprint');
-
-      assign(blueprint, {
-        printDetailedHelp: null
-      });
-
-      var json = blueprint.getJson(true);
-
-      expect(json).to.deep.equal({
-        name: 'my-blueprint',
-        availableOptions: [],
-        anonymousOptions: ['name']
-      });
-    });
-
-    it('if printDetailedHelp returns falsy, don\'t attach property detailedHelp', function() {
-      var blueprint = new Blueprint('path/to/my-blueprint');
-
-      stub(blueprint, 'printDetailedHelp', '');
-
-      var json = blueprint.getJson(true);
-
-      expect(blueprint.printDetailedHelp.called).to.equal(1);
-      expect(json).to.not.have.property('detailedHelp');
-    });
-
-    it('handles extra help', function() {
-      existsSyncStub = function() {
-        return true;
-      };
-      renderFileStub = function() {
-        expect(arguments[1].indent).to.equal('        ');
-        return 'test-file';
-      };
-
-      var blueprint = new Blueprint('path/to/my-blueprint');
-
-      var help = blueprint.printDetailedHelp();
-
-      expect(help).to.equal('test-file');
-    });
-
-    it('handles no extra help', function() {
-      existsSyncStub = function() {
-        return false;
-      };
-      renderFileStub = function() {
-        expect.fail(0, 1, 'should not call MarkdownColor.renderFile');
-      };
-
-      var blueprint = new Blueprint('path/to/my-blueprint');
-
-      var help = blueprint.printDetailedHelp();
-
-      expect(help).to.equal('');
+      expect(actual[0]).to.deep.equal(expected[0]);
     });
   });
 
@@ -507,14 +195,6 @@ some details');
   it('derives name from path', function() {
     var blueprint = new Blueprint(basicBlueprint);
     expect(blueprint.name).to.equal('basic');
-  });
-
-  describe('filesPath', function() {
-    it('returns the blueprints default files path', function() {
-      var blueprint = new Blueprint(basicBlueprint);
-
-      expect(blueprint.filesPath()).to.equal(path.join(basicBlueprint, 'files'));
-    });
   });
 
   describe('basic blueprint installation', function() {
@@ -763,7 +443,7 @@ some details');
       options.entity = { };
       expect(function() {
         blueprint.install(options);
-      }).to.throw(SilentError, /The `ember generate <entity-name>` command requires an entity name to be specified./);
+      }).to.throw(SilentError, /The `ember generate` command requires an entity name to be specified./);
     });
 
     it('throws error when an action does not exist', function() {
@@ -1199,7 +879,7 @@ some details');
       tmpdir    = tmp.in(tmproot);
       blueprint = new Blueprint(basicBlueprint);
       ui        = new MockUI();
-      blueprint.ui = ui;
+
       blueprint.taskFor = function(name) {
         taskNameLookedUp = name;
 
@@ -1243,14 +923,6 @@ some details');
       blueprint.addBowerPackageToProject('foo-bar-local', 'http://twitter.github.io/bootstrap/assets/bootstrap');
     });
 
-    it('correctly handles a single versioned package descriptor as argument (1) (DEPRECATED)', function() {
-      blueprint.ui = ui;
-      blueprint.addBowerPackagesToProject = function(packages) {
-        expect(packages).to.deep.equal([{name: 'foo-bar', target: '1.11.1', source: 'foo-bar'}]);
-      };
-
-      blueprint.addBowerPackageToProject('foo-bar#1.11.1');
-    });
   });
 
   describe('addBowerPackagesToProject', function() {
@@ -1366,38 +1038,6 @@ some details');
     var blueprint;
     var ui;
     var tmpdir;
-
-    beforeEach(function() {
-      tmpdir    = tmp.in(tmproot);
-      blueprint = new Blueprint(basicBlueprint);
-      ui        = new MockUI();
-    });
-
-    afterEach(function() {
-      return remove(tmproot);
-    });
-
-    it('passes a packages array for addAddonsToProject', function() {
-      blueprint.addAddonsToProject = function(options) {
-        expect(options.packages).to.deep.equal(['foo-bar']);
-      };
-
-      blueprint.addAddonToProject('foo-bar');
-    });
-
-    it('passes a packages array with target for addAddonsToProject', function() {
-      blueprint.addAddonsToProject = function(options) {
-        expect(options.packages).to.deep.equal([{name: 'foo-bar', target: '^123.1.12'}]);
-      };
-
-      blueprint.addAddonToProject({name: 'foo-bar', target: '^123.1.12'});
-    });
-  });
-
-  describe('addAddonsToProject', function() {
-    var blueprint;
-    var ui;
-    var tmpdir;
     var AddonInstallTask;
     var taskNameLookedUp;
 
@@ -1422,7 +1062,7 @@ some details');
         run: function() {}
       });
 
-      blueprint.addAddonsToProject({ packages: ['foo-bar'] });
+      blueprint.addAddonToProject('foo-bar');
 
       expect(taskNameLookedUp).to.equal('addon-install');
     });
@@ -1432,52 +1072,41 @@ some details');
 
       AddonInstallTask = Task.extend({
         run: function(options) {
-          pkg = options['packages'];
+          pkg = options['package'];
         }
       });
 
-      blueprint.addAddonsToProject({ packages: ['foo-bar', 'baz-bat'] });
+      blueprint.addAddonToProject('foo-bar');
 
-      expect(pkg).to.deep.equal(['foo-bar', 'baz-bat']);
+      expect(pkg).to.equal('foo-bar');
     });
 
     it('calls the task with correctly parsed options', function() {
-      var pkg, args, bluOpts;
+      var pkg, args;
 
       AddonInstallTask = Task.extend({
         run: function(options) {
-          pkg  = options['packages'];
+          pkg  = options['package'];
           args = options['extraArgs'];
-          bluOpts = options['blueprintOptions'];
         }
       });
 
-      blueprint.addAddonsToProject({
-        packages: [
-          {
-            name: 'foo-bar',
-            target: '1.0.0'
-          },
-          'stuff-things',
-          'baz-bat@0.0.1'
-        ],
-        extraArgs: ['baz'],
-        blueprintOptions: '-foo'
+      blueprint.addAddonToProject({
+        name: 'foo-bar',
+        target: '1.0.0',
+        extraArgs: ['baz']
       });
 
-      expect(pkg).to.deep.equal(['foo-bar@1.0.0', 'stuff-things', 'baz-bat@0.0.1']);
+      expect(pkg).to.equal('foo-bar@1.0.0');
       expect(args).to.deep.equal(['baz']);
-      expect(bluOpts).to.equal('-foo');
     });
 
     it('writes information to the ui log for a single package', function() {
       blueprint.ui = ui;
 
-      blueprint.addAddonsToProject({
-        packages: [{
-          name: 'foo-bar',
-          target: '^123.1.12'
-        }]
+      blueprint.addAddonToProject({
+        name: 'foo-bar',
+        target: '^123.1.12'
       });
 
       var output = ui.output.trim();
@@ -1485,34 +1114,12 @@ some details');
       expect(output).to.match(/install addon.*foo-bar/);
     });
 
-    it('writes information to the ui log for multiple packages', function() {
-      blueprint.ui = ui;
-
-      blueprint.addAddonsToProject({
-        packages: [
-          {
-            name: 'foo-bar',
-            target: '1.0.0'
-          },
-          'stuff-things',
-          'baz-bat@0.0.1'
-        ]
-      });
-
-      var output = ui.output.trim();
-
-      expect(output).to.match(/install addons.*foo-bar@1.0.0,.*stuff-things,.*baz-bat@0.0.1/);
-    });
-
     it('does not error if ui is not present', function() {
       delete blueprint.ui;
 
-      blueprint.addAddonsToProject({
-        packages: [{
-          name: 'foo-bar',
-          target: '^123.1.12'
-        }]
-      });
+      blueprint.addAddonToProject({
+        name: 'foo-bar', target: '^123.1.12'}
+      );
 
       var output = ui.output.trim();
 

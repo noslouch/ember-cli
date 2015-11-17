@@ -1,7 +1,7 @@
 /*jshint node:true*/
 
 var inflection  = require('inflection');
-var stringUtils = require('ember-cli-string-utils');
+var stringUtils = require('../../lib/utilities/string');
 var EOL         = require('os').EOL;
 
 module.exports = {
@@ -19,40 +19,25 @@ module.exports = {
 
     for (var name in entityOptions) {
       var type = entityOptions[name] || '';
-      var foreignModel = name;
-      if (type.indexOf(':') > -1) {
-        foreignModel = type.split(':')[1];
-        type = type.split(':')[0];
-      }
       var dasherizedName = stringUtils.dasherize(name);
+      var dasherizedNameSingular = inflection.singularize(dasherizedName);
       var camelizedName = stringUtils.camelize(name);
       var dasherizedType = stringUtils.dasherize(type);
-      var dasherizedForeignModel = stringUtils.dasherize(foreignModel);
-      var dasherizedForeignModelSingular = inflection.singularize(dasherizedForeignModel);
 
-      var attr;
       if (/has-many/.test(dasherizedType)) {
         var camelizedNamePlural = inflection.pluralize(camelizedName);
-        attr = dsAttr(dasherizedForeignModelSingular, dasherizedType);
-        attrs.push(camelizedNamePlural + ': ' + attr);
-      } else if (/belongs-to/.test(dasherizedType)) {
-        attr = dsAttr(dasherizedForeignModel, dasherizedType);
-        attrs.push(camelizedName + ': ' + attr);
+        attrs.push(camelizedNamePlural + ': ' + dsAttr(dasherizedName, dasherizedType));
       } else {
-        attr = dsAttr(dasherizedName, dasherizedType);
-        attrs.push(camelizedName + ': ' + attr);
+        attrs.push(camelizedName + ': ' + dsAttr(dasherizedName, dasherizedType));
       }
 
       if (/has-many|belongs-to/.test(dasherizedType)) {
-        needs.push("'model:" + dasherizedForeignModelSingular + "'");
+        needs.push("'model:" + dasherizedNameSingular + "'");
       }
     }
-    var needsDeduplicated = needs.filter(function(need, i) {
-      return needs.indexOf(need) === i;
-    });
 
     attrs = attrs.join(',' + EOL + '  ');
-    needs = '  needs: [' + needsDeduplicated.join(', ') + ']';
+    needs = '  needs: [' + needs.join(', ') + ']';
 
     return {
       attrs: attrs,
@@ -63,15 +48,21 @@ module.exports = {
 
 function dsAttr(name, type) {
   switch (type) {
+  case 'array':
+  case 'boolean':
+  case 'date':
+  case 'number':
+  case 'object':
+  case 'string':
+    return 'DS.attr(\'' + type + '\')';
   case 'belongs-to':
     return 'DS.belongsTo(\'' + name + '\')';
   case 'has-many':
-    return 'DS.hasMany(\'' + name + '\')';
-  case '':
+    var singularizedName = inflection.singularize(name);
+    return 'DS.hasMany(\'' + singularizedName + '\')';
+  default:
     //"If you don't specify the type of the attribute, it will be whatever was provided by the server"
     //http://emberjs.com/guides/models/defining-models/
     return 'DS.attr()';
-  default:
-    return 'DS.attr(\'' + type + '\')';
   }
 }

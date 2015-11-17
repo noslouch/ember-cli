@@ -4,12 +4,11 @@ var fs          = require('fs');
 var existsSync  = require('exists-sync');
 var path        = require('path');
 var walkSync    = require('walk-sync');
-var stringUtil  = require('ember-cli-string-utils');
+var stringUtil  = require('../../lib/utilities/string');
 var uniq        = require('lodash/array/uniq');
+var Blueprint   = require('../../lib/models/blueprint');
 var SilentError = require('silent-error');
 var date        = new Date();
-
-var normalizeEntityName = require('ember-cli-normalize-entity-name');
 
 module.exports = {
   description: 'The default blueprint for ember-cli addons.',
@@ -37,7 +36,7 @@ module.exports = {
     contents.devDependencies['ember-disable-prototype-extensions'] = '^1.0.0';
 
     // add `ember-try` to addons by default
-    contents.devDependencies['ember-try'] = '~0.0.8';
+    contents.devDependencies['ember-try'] = '0.0.6';
     contents.scripts.test = "ember try:testall";
 
     contents['ember-addon'] = contents['ember-addon'] || {};
@@ -140,7 +139,7 @@ module.exports = {
   },
 
   normalizeEntityName: function(entityName) {
-    entityName = normalizeEntityName(entityName);
+    entityName = Blueprint.prototype.normalizeEntityName.apply(this, arguments);
 
     if(this.project.isEmberCLIProject() && !this.project.isEmberCLIAddon()) {
       throw new SilentError('Generating an addon in an existing ember-cli project is not supported.');

@@ -1,24 +1,19 @@
 'use strict';
 
 var expect         = require('chai').expect;
-var EOL            = require('os').EOL;
-var proxyquire     = require('proxyquire');
 var stub           = require('../../helpers/stub').stub;
 var commandOptions = require('../../factories/command-options');
 var Task           = require('../../../lib/models/task');
+var Promise        = require('../../../lib/ext/promise');
 
-var getPortStub;
+describe('server command', function() {
+  var ServeCommand;
+  var tasks;
+  var options;
 
-var ServeCommand = proxyquire('../../../lib/commands/serve', {
-  'portfinder': {
-    getPort: function() {
-      return getPortStub.apply(this, arguments);
-    }
-  }
-});
-
-describe('serve command', function() {
-  var tasks, options, command;
+  before(function() {
+    ServeCommand = require('../../../lib/commands/serve');
+  });
 
   beforeEach(function() {
     tasks = {
@@ -26,50 +21,45 @@ describe('serve command', function() {
     };
 
     options = commandOptions({
-      tasks: tasks
+      tasks: tasks,
+      settings: {}
     });
 
     stub(tasks.Serve.prototype, 'run');
-    getPortStub = function(options, callback) {
-      callback(null, 49152);
-    };
+    stub(ServeCommand.prototype, '_getPort', new Promise(function(resolve) {
+      resolve(49152);
+    }));
+  });
 
-    command = new ServeCommand(options);
+  after(function() {
+    ServeCommand = null;
   });
 
   afterEach(function() {
     tasks.Serve.prototype.run.restore();
+    ServeCommand.prototype._getPort.restore();
   });
 
   it('has correct options', function() {
-    return command.validateAndRun([
+    return new ServeCommand(options).validateAndRun([
       '--port', '4000'
     ]).then(function() {
       var serveRun = tasks.Serve.prototype.run;
       var runOps = serveRun.calledWith[0][0];
+      var getPortOps = ServeCommand.prototype._getPort.calledWith[0][0];
+
+      expect(getPortOps.host).to.equal('0.0.0.0', 'a livereload port is found using the default host');
 
       expect(serveRun.called).to.equal(1, 'expected run to be called once');
 
-      expect(runOps.port).to.equal(4000, 'has correct port');
+      expect(runOps.port).to.equal(4000,            'has correct port');
       expect(runOps.liveReloadPort).to.be.within(49152, 65535, 'has correct liveReload port');
-    });
-  });
-
-  it('allows OS to choose port', function() {
-    return command.validateAndRun([
-      '--port', '0'
-    ]).then(function() {
-      var serveRun = tasks.Serve.prototype.run;
-      var runOps = serveRun.calledWith[0][0];
-
-      expect(serveRun.called).to.equal(1, 'expected run to be called once');
-
-      expect(runOps.port).to.be.within(49152, 65535, 'has correct port');
+      expect(runOps.liveReloadHost).to.equal('0.0.0.0', 'has correct liveReload host');
     });
   });
 
   it('has correct liveLoadPort', function() {
-    return command.validateAndRun([
+    return new ServeCommand(options).validateAndRun([
       '--live-reload-port', '4001'
     ]).then(function() {
       var serveRun = tasks.Serve.prototype.run;
@@ -82,17 +72,12 @@ describe('serve command', function() {
   });
 
   it('has correct liveLoadHost', function() {
-    var getPortOpts;
-    getPortStub = function(options, callback) {
-      getPortOpts = options;
-      callback(null, 49152);
-    };
-
-    return command.validateAndRun([
+    return new ServeCommand(options).validateAndRun([
       '--live-reload-host', '127.0.0.1'
     ]).then(function() {
       var serveRun = tasks.Serve.prototype.run;
       var runOps = serveRun.calledWith[0][0];
+      var getPortOpts = ServeCommand.prototype._getPort.calledWith[0][0];
 
       expect(serveRun.called).to.equal(1, 'expected run to be called once');
 
@@ -102,7 +87,7 @@ describe('serve command', function() {
   });
 
   it('has correct proxy', function() {
-    return command.validateAndRun([
+    return new ServeCommand(options).validateAndRun([
       '--proxy', 'http://localhost:3000/'
     ]).then(function() {
       var serveRun = tasks.Serve.prototype.run;
@@ -115,7 +100,7 @@ describe('serve command', function() {
   });
 
   it('has correct insecure proxy option', function() {
-    return command.validateAndRun([
+    return new ServeCommand(options).validateAndRun([
       '--insecure-proxy'
     ]).then(function() {
       var serveRun = tasks.Serve.prototype.run;
@@ -128,7 +113,7 @@ describe('serve command', function() {
   });
 
   it('has correct default value for insecure proxy', function() {
-    return command.validateAndRun().then(function() {
+    return new ServeCommand(options).validateAndRun().then(function() {
       var serveRun = tasks.Serve.prototype.run;
       var ops = serveRun.calledWith[0][0];
 
@@ -139,14 +124,14 @@ describe('serve command', function() {
   });
 
   it('requires proxy URL to include protocol', function() {
-    return command.validateAndRun([
+    return new ServeCommand(options).validateAndRun([
       '--proxy', 'localhost:3000'
     ]).then(function() {
       expect(false, 'it rejects when proxy URL doesn\'t include protocol');
     })
     .catch(function(error) {
       expect(error.message).to.equal(
-        'You need to include a protocol with the proxy URL.' + EOL + 'Try --proxy http://localhost:3000'
+        'You need to include a protocol with the proxy URL.\nTry --proxy http://localhost:3000'
       );
     });
   });
@@ -156,7 +141,7 @@ describe('serve command', function() {
       return { baseURL: env };
     };
 
-    return command.validateAndRun([
+    return new ServeCommand(options).validateAndRun([
       '--environment', 'test'
     ]).then(function() {
       var serveRun = tasks.Serve.prototype.run;
@@ -167,7 +152,7 @@ describe('serve command', function() {
   });
 
   it('host alias does not conflict with help alias', function() {
-    return command.validateAndRun([
+    return new ServeCommand(options).validateAndRun([
       '-H', 'hostname'
     ]).then(function() {
       var serveRun = tasks.Serve.prototype.run;

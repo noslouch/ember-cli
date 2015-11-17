@@ -132,9 +132,7 @@ describe('Acceptance: ember generate in-addon', function() {
           "import { moduleForComponent, test } from 'ember-qunit';",
           "import hbs from 'htmlbars-inline-precompile';",
           "moduleForComponent('x-foo'",
-          "integration: true",
-          "{{x-foo}}",
-          "{{#x-foo}}"
+          "integration: true"
         ]
       });
     });
@@ -147,15 +145,13 @@ describe('Acceptance: ember generate in-addon', function() {
           "import { moduleForComponent, test } from 'ember-qunit';",
           "import hbs from 'htmlbars-inline-precompile';",
           "moduleForComponent('x-foo'",
-          "integration: true",
-          "{{x-foo}}",
-          "{{#x-foo}}"
+          "integration: true"
         ]
       });
       assertFileToNotExist('app/component-test/x-foo.js');
     });
   });
-
+  
   it('in-addon component-test x-foo --unit', function() {
     return generateInAddon(['component-test', 'x-foo', '--unit']).then(function() {
       assertFile('tests/unit/components/x-foo-test.js', {
@@ -168,7 +164,7 @@ describe('Acceptance: ember generate in-addon', function() {
       assertFileToNotExist('app/component-test/x-foo.js');
     });
   });
-
+  
   it('in-addon component nested/x-foo', function() {
     return generateInAddon(['component', 'nested/x-foo']).then(function() {
       assertFile('addon/components/nested/x-foo.js', {
@@ -193,9 +189,7 @@ describe('Acceptance: ember generate in-addon', function() {
           "import { moduleForComponent, test } from 'ember-qunit';",
           "import hbs from 'htmlbars-inline-precompile';",
           "moduleForComponent('nested/x-foo'",
-          "integration: true",
-          "{{nested/x-foo}}",
-          "{{#nested/x-foo}}"
+          "integration: true" 
         ]
       });
     });
@@ -385,9 +379,6 @@ describe('Acceptance: ember generate in-addon', function() {
           "moduleFor('route:foo'"
         ]
       });
-      assertFile('tests/dummy/app/router.js', {
-        doesNotContain: "this.route('foo');"
-      });
     });
   });
 
@@ -410,9 +401,6 @@ describe('Acceptance: ember generate in-addon', function() {
           "import { moduleFor, test } from 'ember-qunit';",
           "moduleFor('route:foo/bar'"
         ]
-      });
-      assertFile('tests/dummy/app/router.js', {
-        doesNotContain:  "this.route('bar');"
       });
     });
   });
@@ -495,13 +483,13 @@ describe('Acceptance: ember generate in-addon', function() {
   it('in-addon initializer foo', function() {
     return generateInAddon(['initializer', 'foo']).then(function() {
       assertFile('addon/initializers/foo.js', {
-        contains: "export function initialize(/* application */) {" + EOL +
+        contains: "export function initialize(/* container, application */) {" + EOL +
                   "  // application.inject('route', 'foo', 'service:foo');" + EOL +
                   "}" + EOL +
                   "" + EOL+
                   "export default {" + EOL +
                   "  name: 'foo'," + EOL +
-                  "  initialize" + EOL +
+                  "  initialize: initialize" + EOL +
                   "};"
       });
       assertFile('app/initializers/foo.js', {
@@ -516,13 +504,13 @@ describe('Acceptance: ember generate in-addon', function() {
   it('in-addon initializer foo/bar', function() {
     return generateInAddon(['initializer', 'foo/bar']).then(function() {
       assertFile('addon/initializers/foo/bar.js', {
-        contains: "export function initialize(/* application */) {" + EOL +
+        contains: "export function initialize(/* container, application */) {" + EOL +
                   "  // application.inject('route', 'foo', 'service:foo');" + EOL +
                   "}" + EOL +
                   "" + EOL+
                   "export default {" + EOL +
                   "  name: 'foo/bar'," + EOL +
-                  "  initialize" + EOL +
+                  "  initialize: initialize" + EOL +
                   "};"
       });
       assertFile('app/initializers/foo/bar.js', {
@@ -724,11 +712,11 @@ describe('Acceptance: ember generate in-addon', function() {
         contains: [
           "import DS from 'ember-data';",
           'export default DS.Transform.extend({' + EOL +
-          '  deserialize(serialized) {' + EOL +
+          '  deserialize: function(serialized) {' + EOL +
           '    return serialized;' + EOL +
           '  },' + EOL +
           EOL +
-          '  serialize(deserialized) {' + EOL +
+          '  serialize: function(deserialized) {' + EOL +
           '    return deserialized;' + EOL +
           '  }' + EOL +
           '});'
@@ -754,11 +742,11 @@ describe('Acceptance: ember generate in-addon', function() {
         contains: [
           "import DS from 'ember-data';",
           'export default DS.Transform.extend({' + EOL +
-          '  deserialize(serialized) {' + EOL +
+          '  deserialize: function(serialized) {' + EOL +
           '    return serialized;' + EOL +
           '  },' + EOL +
           '' + EOL +
-          '  serialize(deserialized) {' + EOL +
+          '  serialize: function(deserialized) {' + EOL +
           '    return deserialized;' + EOL +
           '  }' + EOL +
           '});'
@@ -957,16 +945,6 @@ describe('Acceptance: ember generate in-addon', function() {
                     "    res.status(204).end();" + EOL +
                     "  });" + EOL +
                     EOL +
-                    "  // The POST and PUT call will not contain a request body" + EOL +
-                    "  // because the body-parser is not included by default." + EOL +
-                    "  // To use req.body, run:" + EOL +
-                    EOL +
-                    "  //    npm install --save-dev body-parser" + EOL +
-                    EOL +
-                    "  // After installing, you need to `use` the body-parser for" + EOL +
-                    "  // this mock uncommenting the following line:" + EOL +
-                    "  //" + EOL +
-                    "  //app.use('/api/foo', require('body-parser'));" + EOL +
                     "  app.use('/api/foo', fooRouter);" + EOL +
                     "};"
         });
@@ -1016,16 +994,6 @@ describe('Acceptance: ember generate in-addon', function() {
                     "    res.status(204).end();" + EOL +
                     "  });" + EOL +
                     EOL +
-                    "  // The POST and PUT call will not contain a request body" + EOL +
-                    "  // because the body-parser is not included by default." + EOL +
-                    "  // To use req.body, run:" + EOL +
-                    EOL +
-                    "  //    npm install --save-dev body-parser" + EOL +
-                    EOL +
-                    "  // After installing, you need to `use` the body-parser for" + EOL +
-                    "  // this mock uncommenting the following line:" + EOL +
-                    "  //" + EOL +
-                    "  //app.use('/api/foo-bar', require('body-parser'));" + EOL +
                     "  app.use('/api/foo-bar', fooBarRouter);" + EOL +
                     "};"
         });
@@ -1089,4 +1057,5 @@ describe('Acceptance: ember generate in-addon', function() {
         assertFileToNotExist('app/acceptance-tests/foo/bar.js');
       });
     });
+
 });

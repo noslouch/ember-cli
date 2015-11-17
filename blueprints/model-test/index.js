@@ -1,7 +1,7 @@
 /*jshint node:true*/
 
 var ModelBlueprint = require('../model');
-var testInfo = require('ember-cli-test-info');
+var testInfo = require('../../lib/utilities/test-info');
 
 module.exports = {
   description: 'Generates a model unit test.',

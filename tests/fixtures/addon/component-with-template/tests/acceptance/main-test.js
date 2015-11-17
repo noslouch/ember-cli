@@ -1,13 +1,15 @@
+import Ember from 'ember';
 import startApp from '../helpers/start-app';
-import destroyApp from '../helpers/destroy-app';
 import { module, test } from 'qunit';
+
+var application;
 
 module('Acceptance', {
   beforeEach: function() {
-    this.application = startApp();
+    application = startApp();
   },
   afterEach: function() {
-    destroyApp(this.application);
+    Ember.run(application, 'destroy');
   }
 });
 

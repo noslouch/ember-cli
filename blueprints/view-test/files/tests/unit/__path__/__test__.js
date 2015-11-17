@@ -4,6 +4,6 @@ moduleFor('view:<%= dasherizedModuleName %>', '<%= friendlyTestDescription %>');
 
 // Replace this with your real tests.
 test('it exists', function(assert) {
-  let view = this.subject();
+  var view = this.subject();
   assert.ok(view);
 });

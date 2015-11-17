@@ -16,9 +16,6 @@ describe('writeError', function() {
 
   it('no error', function() {
     writeError(ui);
-
-    expect(ui.output).to.equal('');
-    expect(ui.errors).to.equal('');
   });
 
   it('error with message', function() {
@@ -26,8 +23,7 @@ describe('writeError', function() {
       message: 'build error'
     }));
 
-    expect(ui.output).to.equal('');
-    expect(ui.errors).to.equal(chalk.red('build error') + EOL);
+    expect(ui.output).to.equal(chalk.red('build error') + EOL);
   });
 
   it('error with stack', function() {
@@ -35,8 +31,7 @@ describe('writeError', function() {
       stack: 'the stack'
     }));
 
-    expect(ui.output).to.equal('');
-    expect(ui.errors).to.equal(chalk.red('Error') + EOL + 'the stack' + EOL);
+    expect(ui.output).to.equal(chalk.red('Error') + EOL + 'the stack' + EOL);
   });
 
   it('error with file', function() {
@@ -44,8 +39,7 @@ describe('writeError', function() {
       file: 'the file'
     }));
 
-    expect(ui.output).to.equal('');
-    expect(ui.errors).to.equal(chalk.red('File: the file') + EOL + chalk.red('Error') + EOL);
+    expect(ui.output).to.equal(chalk.red('File: the file') + EOL + chalk.red('Error') + EOL);
   });
 
   it('error with filename (as from Uglify)', function() {
@@ -53,8 +47,7 @@ describe('writeError', function() {
       filename: 'the file'
     }));
 
-    expect(ui.output).to.equal('');
-    expect(ui.errors).to.equal(chalk.red('File: the file') + EOL + chalk.red('Error') + EOL);
+    expect(ui.output).to.equal(chalk.red('File: the file') + EOL + chalk.red('Error') + EOL);
   });
 
   it('error with file + line', function() {
@@ -63,8 +56,7 @@ describe('writeError', function() {
       line: 'the line'
     }));
 
-    expect(ui.output).to.equal('');
-    expect(ui.errors).to.equal(chalk.red('File: the file (the line)') + EOL + chalk.red('Error') + EOL);
+    expect(ui.output).to.equal(chalk.red('File: the file (the line)') + EOL + chalk.red('Error') + EOL);
   });
 
   it('error with file + col', function() {
@@ -73,8 +65,7 @@ describe('writeError', function() {
       col: 'the col'
     }));
 
-    expect(ui.output).to.equal('');
-    expect(ui.errors).to.equal(chalk.red('File: the file') + EOL + chalk.red('Error') + EOL);
+    expect(ui.output).to.equal(chalk.red('File: the file') + EOL + chalk.red('Error') + EOL);
   });
 
   it('error with file + line + col', function() {
@@ -84,7 +75,6 @@ describe('writeError', function() {
       col:  'the col'
     }));
 
-    expect(ui.output).to.equal('');
-    expect(ui.errors).to.equal(chalk.red('File: the file (the line:the col)') + EOL + chalk.red('Error') + EOL);
+    expect(ui.output).to.equal(chalk.red('File: the file (the line:the col)') + EOL + chalk.red('Error') + EOL);
   });
 });

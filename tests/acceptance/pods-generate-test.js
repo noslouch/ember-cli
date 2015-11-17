@@ -150,8 +150,8 @@ describe('Acceptance: ember generate pod', function() {
     });
   });
 
-  it('.ember-cli usePods setting generates in classic structure with --classic flag', function() {
-    return generateWithUsePods(['controller', 'foo', '--classic']).then(function() {
+  it('.ember-cli usePods setting generates in basic structure with --pod flag', function() {
+    return generateWithUsePods(['controller', 'foo', '--pod']).then(function() {
       assertFile('app/controllers/foo.js', {
         contains: [
           "import Ember from 'ember';",
@@ -298,9 +298,7 @@ describe('Acceptance: ember generate pod', function() {
           "import { moduleForComponent, test } from 'ember-qunit';",
           "import hbs from 'htmlbars-inline-precompile';",
           "moduleForComponent('x-foo'",
-          "integration: true",
-          "{{x-foo}}",
-          "{{#x-foo}}"
+          "integration: true"
         ]
       });
     });
@@ -323,9 +321,7 @@ describe('Acceptance: ember generate pod', function() {
           "import { moduleForComponent, test } from 'ember-qunit';",
           "import hbs from 'htmlbars-inline-precompile';",
           "moduleForComponent('foo/x-foo'",
-          "integration: true",
-          "{{foo/x-foo}}",
-          "{{#foo/x-foo}}"
+          "integration: true"
         ]
       });
     });
@@ -348,9 +344,7 @@ describe('Acceptance: ember generate pod', function() {
           "import { moduleForComponent, test } from 'ember-qunit';",
           "import hbs from 'htmlbars-inline-precompile';",
           "moduleForComponent('foo/x-foo'",
-          "integration: true",
-          "{{foo/x-foo}}",
-          "{{#foo/x-foo}}"
+          "integration: true"
         ]
       });
     });
@@ -373,9 +367,7 @@ describe('Acceptance: ember generate pod', function() {
           "import { moduleForComponent, test } from 'ember-qunit';",
           "import hbs from 'htmlbars-inline-precompile';",
           "moduleForComponent('bar/x-foo'",
-          "integration: true",
-          "{{bar/x-foo}}",
-          "{{#bar/x-foo}}"
+          "integration: true"
         ]
       });
     });
@@ -398,9 +390,7 @@ describe('Acceptance: ember generate pod', function() {
           "import { moduleForComponent, test } from 'ember-qunit';",
           "import hbs from 'htmlbars-inline-precompile';",
           "moduleForComponent('bar/x-foo'",
-          "integration: true",
-          "{{bar/x-foo}}",
-          "{{#bar/x-foo}}"
+          "integration: true"
         ]
       });
     });
@@ -423,9 +413,7 @@ describe('Acceptance: ember generate pod', function() {
           "import { moduleForComponent, test } from 'ember-qunit';",
           "import hbs from 'htmlbars-inline-precompile';",
           "moduleForComponent('bar/foo/x-foo'",
-          "integration: true",
-          "{{bar/foo/x-foo}}",
-          "{{#bar/foo/x-foo}}"
+          "integration: true"
         ]
       });
     });
@@ -447,9 +435,7 @@ describe('Acceptance: ember generate pod', function() {
         contains: [
           "import { moduleForComponent, test } from 'ember-qunit';",
           "moduleForComponent('bar/foo/x-foo'",
-          "integration: true",
-          "{{bar/foo/x-foo}}",
-          "{{#bar/foo/x-foo}}"
+          "integration: true"
         ]
       });
     });
@@ -472,9 +458,7 @@ describe('Acceptance: ember generate pod', function() {
           "import { moduleForComponent, test } from 'ember-qunit';",
           "import hbs from 'htmlbars-inline-precompile';",
           "moduleForComponent('bar/baz/x-foo'",
-          "integration: true",
-          "{{bar/baz/x-foo}}",
-          "{{#bar/baz/x-foo}}"
+          "integration: true"
         ]
       });
     });
@@ -497,9 +481,7 @@ describe('Acceptance: ember generate pod', function() {
           "import { moduleForComponent, test } from 'ember-qunit';",
           "import hbs from 'htmlbars-inline-precompile';",
           "moduleForComponent('bar/baz/x-foo'",
-          "integration: true",
-          "{{bar/baz/x-foo}}",
-          "{{#bar/baz/x-foo}}"
+          "integration: true"
         ]
       });
     });
@@ -522,9 +504,7 @@ describe('Acceptance: ember generate pod', function() {
           "import { moduleForComponent, test } from 'ember-qunit';",
           "import hbs from 'htmlbars-inline-precompile';",
           "moduleForComponent('bar/baz/foo/x-foo'",
-          "integration: true",
-          "{{bar/baz/foo/x-foo}}",
-          "{{#bar/baz/foo/x-foo}}"
+          "integration: true"
         ]
       });
     });
@@ -547,9 +527,7 @@ describe('Acceptance: ember generate pod', function() {
           "import { moduleForComponent, test } from 'ember-qunit';",
           "import hbs from 'htmlbars-inline-precompile';",
           "moduleForComponent('bar/baz/foo/x-foo'",
-          "integration: true",
-          "{{bar/baz/foo/x-foo}}",
-          "{{#bar/baz/foo/x-foo}}"
+          "integration: true"
         ]
       });
     });
@@ -572,9 +550,7 @@ describe('Acceptance: ember generate pod', function() {
           "import { moduleForComponent, test } from 'ember-qunit';",
           "import hbs from 'htmlbars-inline-precompile';",
           "moduleForComponent('x-foo'",
-          "integration: true",
-          "{{x-foo}}",
-          "{{#x-foo}}"
+          "integration: true"
         ]
       });
     });
@@ -597,9 +573,7 @@ describe('Acceptance: ember generate pod', function() {
           "import { moduleForComponent, test } from 'ember-qunit';",
           "import hbs from 'htmlbars-inline-precompile';",
           "moduleForComponent('x-foo'",
-          "integration: true",
-          "{{x-foo}}",
-          "{{#x-foo}}"
+          "integration: true"
         ]
       });
     });
@@ -622,9 +596,7 @@ describe('Acceptance: ember generate pod', function() {
           "import { moduleForComponent, test } from 'ember-qunit';",
           "import hbs from 'htmlbars-inline-precompile';",
           "moduleForComponent('foo/x-foo'",
-          "integration: true",
-          "{{foo/x-foo}}",
-          "{{#foo/x-foo}}"
+          "integration: true"
         ]
       });
     });
@@ -647,9 +619,7 @@ describe('Acceptance: ember generate pod', function() {
           "import { moduleForComponent, test } from 'ember-qunit';",
           "import hbs from 'htmlbars-inline-precompile';",
           "moduleForComponent('foo/x-foo'",
-          "integration: true",
-          "{{foo/x-foo}}",
-          "{{#foo/x-foo}}"
+          "integration: true"
         ]
       });
     });
@@ -883,31 +853,6 @@ describe('Acceptance: ember generate pod', function() {
     });
   });
 
-  it('route foo --pod with --reset-namespace', function() {
-    return generate(['route', 'foo', '--pod', '--reset-namespace'])
-      .then(function() {
-        assertFile('app/router.js', {
-          contains: [
-            'this.route(\'foo\', {',
-            'resetNamespace: true',
-            '});'
-          ]
-        });
-      });
-  });
-
-  it('route foo --pod with --reset-namespace=false', function() {
-    return generate(['route', 'foo', '--pod', '--reset-namespace=false'])
-      .then(function() {
-        assertFile('app/router.js', {
-          contains: [
-            'this.route(\'foo\', {',
-            'resetNamespace: false',
-            '});'
-          ]
-        });
-      });
-  });
 
   it('route foo --pod podModulePrefix', function() {
     return generateWithPrefix(['route', 'foo', '--pod']).then(function() {
@@ -1094,32 +1039,6 @@ describe('Acceptance: ember generate pod', function() {
       });
   });
 
-  it('resource foos --pod with --reset-namespace', function() {
-    return generate(['resource', 'foos', '--pod', '--reset-namespace'])
-      .then(function() {
-        assertFile('app/router.js', {
-          contains: [
-            'this.route(\'foos\', {',
-            'resetNamespace: true',
-            '});'
-          ]
-        });
-      });
-  });
-
-  it('resource foos --pod with --reset-namespace=false', function() {
-    return generate(['resource', 'foos', '--pod', '--reset-namespace=false'])
-      .then(function() {
-        assertFile('app/router.js', {
-          contains: [
-            'this.route(\'foos\', {',
-            'resetNamespace: false',
-            '});'
-          ]
-        });
-      });
-  });
-
   it('resource foos --pod podModulePrefix', function() {
     return generateWithPrefix(['resource', 'foos', '--pod']).then(function() {
       assertFile('app/router.js', {
@@ -1146,13 +1065,13 @@ describe('Acceptance: ember generate pod', function() {
   it('initializer foo --pod', function() {
     return generate(['initializer', 'foo', '--pod']).then(function() {
       assertFile('app/initializers/foo.js', {
-        contains: "export function initialize(/* application */) {" + EOL +
+        contains: "export function initialize(/* container, application */) {" + EOL +
                   "  // application.inject('route', 'foo', 'service:foo');" + EOL +
                   "}" + EOL +
                   "" + EOL+
                   "export default {" + EOL +
                   "  name: 'foo'," + EOL +
-                  "  initialize" + EOL +
+                  "  initialize: initialize" + EOL +
                   "};"
       });
     });
@@ -1161,13 +1080,13 @@ describe('Acceptance: ember generate pod', function() {
   it('initializer foo/bar --pod', function() {
     return generate(['initializer', 'foo/bar', '--pod']).then(function() {
       assertFile('app/initializers/foo/bar.js', {
-        contains: "export function initialize(/* application */) {" + EOL +
+        contains: "export function initialize(/* container, application */) {" + EOL +
                   "  // application.inject('route', 'foo', 'service:foo');" + EOL +
                   "}" + EOL +
                   "" + EOL+
                   "export default {" + EOL +
                   "  name: 'foo/bar'," + EOL +
-                  "  initialize" + EOL +
+                  "  initialize: initialize" + EOL +
                   "};"
       });
     });
@@ -1424,11 +1343,11 @@ describe('Acceptance: ember generate pod', function() {
         contains: [
           "import DS from 'ember-data';",
           'export default DS.Transform.extend({' + EOL +
-          '  deserialize(serialized) {' + EOL +
+          '  deserialize: function(serialized) {' + EOL +
           '    return serialized;' + EOL +
           '  },' + EOL +
           EOL +
-          '  serialize(deserialized) {' + EOL +
+          '  serialize: function(deserialized) {' + EOL +
           '    return deserialized;' + EOL +
           '  }' + EOL +
           '});'
@@ -1449,11 +1368,11 @@ describe('Acceptance: ember generate pod', function() {
         contains: [
           "import DS from 'ember-data';",
           'export default DS.Transform.extend({' + EOL +
-          '  deserialize(serialized) {' + EOL +
+          '  deserialize: function(serialized) {' + EOL +
           '    return serialized;' + EOL +
           '  },' + EOL +
           EOL +
-          '  serialize(deserialized) {' + EOL +
+          '  serialize: function(deserialized) {' + EOL +
           '    return deserialized;' + EOL +
           '  }' + EOL +
           '});'
@@ -1474,11 +1393,11 @@ describe('Acceptance: ember generate pod', function() {
         contains: [
           "import DS from 'ember-data';",
           'export default DS.Transform.extend({' + EOL +
-          '  deserialize(serialized) {' + EOL +
+          '  deserialize: function(serialized) {' + EOL +
           '    return serialized;' + EOL +
           '  },' + EOL +
           '' + EOL +
-          '  serialize(deserialized) {' + EOL +
+          '  serialize: function(deserialized) {' + EOL +
           '    return deserialized;' + EOL +
           '  }' + EOL +
           '});'
@@ -1499,11 +1418,11 @@ describe('Acceptance: ember generate pod', function() {
         contains: [
           "import DS from 'ember-data';",
           'export default DS.Transform.extend({' + EOL +
-          '  deserialize(serialized) {' + EOL +
+          '  deserialize: function(serialized) {' + EOL +
           '    return serialized;' + EOL +
           '  },' + EOL +
           '' + EOL +
-          '  serialize(deserialized) {' + EOL +
+          '  serialize: function(deserialized) {' + EOL +
           '    return deserialized;' + EOL +
           '  }' + EOL +
           '});'
@@ -1698,16 +1617,6 @@ describe('Acceptance: ember generate pod', function() {
                   "    res.status(204).end();" + EOL +
                   "  });" + EOL +
                   EOL +
-                  "  // The POST and PUT call will not contain a request body" + EOL +
-                  "  // because the body-parser is not included by default." + EOL +
-                  "  // To use req.body, run:" + EOL +
-                  EOL +
-                  "  //    npm install --save-dev body-parser" + EOL +
-                  EOL +
-                  "  // After installing, you need to `use` the body-parser for" + EOL +
-                  "  // this mock uncommenting the following line:" + EOL +
-                  "  //" + EOL +
-                  "  //app.use('/api/foo', require('body-parser'));" + EOL +
                   "  app.use('/api/foo', fooRouter);" + EOL +
                   "};"
       });
@@ -1757,16 +1666,6 @@ describe('Acceptance: ember generate pod', function() {
                   "    res.status(204).end();" + EOL +
                   "  });" + EOL +
                   EOL +
-                  "  // The POST and PUT call will not contain a request body" + EOL +
-                  "  // because the body-parser is not included by default." + EOL +
-                  "  // To use req.body, run:" + EOL +
-                  EOL +
-                  "  //    npm install --save-dev body-parser" + EOL +
-                  EOL +
-                  "  // After installing, you need to `use` the body-parser for" + EOL +
-                  "  // this mock uncommenting the following line:" + EOL +
-                  "  //" + EOL +
-                  "  //app.use('/api/foo-bar', require('body-parser'));" + EOL +
                   "  app.use('/api/foo-bar', fooBarRouter);" + EOL +
                   "};"
       });
@@ -1934,12 +1833,10 @@ describe('Acceptance: ember generate pod', function() {
   it('passes custom cli arguments to blueprint options', function() {
     return initApp()
       .then(function() {
-        return outputFile(
+        outputFile(
           'blueprints/customblue/files/app/__name__.js',
           "Q: Can I has custom command? A: <%= hasCustomCommand %>"
         );
-      })
-      .then(function() {
         return outputFile(
           'blueprints/customblue/index.js',
           "module.exports = {" + EOL +

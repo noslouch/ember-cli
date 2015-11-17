@@ -1,6 +1,6 @@
 /*jshint node:true*/
 
-var testInfo = require('ember-cli-test-info');
+var testInfo = require('../../lib/utilities/test-info');
 
 module.exports = {
   description: 'Generates a service unit test.',

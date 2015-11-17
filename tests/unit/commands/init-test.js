@@ -9,10 +9,13 @@ var MockAnalytics = require('../../helpers/mock-analytics');
 var Promise       = require('../../../lib/ext/promise');
 var Project       = require('../../../lib/models/project');
 var Task          = require('../../../lib/models/task');
-var InitCommand   = require('../../../lib/commands/init');
 
 describe('init command', function() {
-  var ui, analytics, tasks, command;
+  var InitCommand;
+  var ui;
+  var analytics;
+  var project;
+  var tasks;
 
   beforeEach(function() {
     ui = new MockUI();
@@ -22,22 +25,19 @@ describe('init command', function() {
       NpmInstall: Task.extend({}),
       BowerInstall: Task.extend({})
     };
+
+    project = new Project(process.cwd(), { name: 'some-random-name'});
+    InitCommand = require('../../../lib/commands/init');
   });
 
-  function buildCommand(projectOpts) {
-    var options = {
+  it('doesn\'t allow to create an application named `test`', function() {
+    var command = new InitCommand({
       ui: ui,
       analytics: analytics,
-      project: new Project(process.cwd(), projectOpts || { name: 'some-random-name' }),
+      project: new Project(process.cwd(), { name: 'test'}),
       tasks: tasks,
       settings: {}
-    };
-
-    command = new InitCommand(options);
-  }
-
-  it('doesn\'t allow to create an application named `test`', function() {
-    buildCommand({ name: 'test' });
+    });
 
     return command.validateAndRun([]).then(function() {
       expect(false, 'should have rejected with an application name of test');
@@ -48,7 +48,13 @@ describe('init command', function() {
   });
 
   it('doesn\'t allow to create an application without project name', function() {
-    buildCommand({ name: undefined });
+    var command = new InitCommand({
+      ui: ui,
+      analytics: analytics,
+      project: new Project(process.cwd(), { name: undefined}),
+      tasks: tasks,
+      settings: {}
+    });
 
     return command.validateAndRun([]).then(function() {
       expect(false, 'should have rejected with an application without project name');
@@ -66,7 +72,13 @@ describe('init command', function() {
       }
     });
 
-    buildCommand();
+    var command = new InitCommand({
+      ui: ui,
+      analytics: analytics,
+      project: project,
+      tasks: tasks,
+      settings: {}
+    });
 
     return command.validateAndRun([])
       .catch(function(reason) {
@@ -82,7 +94,13 @@ describe('init command', function() {
       }
     });
 
-    buildCommand();
+    var command = new InitCommand({
+      ui: ui,
+      analytics: analytics,
+      project: new Project(process.cwd(), { name: 'some-random-name'}),
+      tasks: tasks,
+      settings: {}
+    });
 
     return command.validateAndRun(['--name=provided-name'])
       .catch(function(reason) {
@@ -109,7 +127,13 @@ describe('init command', function() {
       }
     });
 
-    buildCommand({ name: path.basename(process.cwd()) });
+    var command = new InitCommand({
+      ui: ui,
+      analytics: analytics,
+      project: new Project(process.cwd(), { name: path.basename(process.cwd()) }),
+      tasks: tasks,
+      settings: {}
+    });
 
     return command.validateAndRun([])
       .catch(function(reason) {
@@ -129,7 +153,13 @@ describe('init command', function() {
       }
     });
 
-    buildCommand();
+    var command = new InitCommand({
+      ui: ui,
+      analytics: analytics,
+      project: new Project(process.cwd(), { name: 'some-random-name'}),
+      tasks: tasks,
+      settings: {}
+    });
 
     return command.validateAndRun(['--dry-run'])
       .catch(function(reason) {
@@ -145,7 +175,13 @@ describe('init command', function() {
       }
     });
 
-    buildCommand();
+    var command = new InitCommand({
+      ui: ui,
+      analytics: analytics,
+      project: new Project(process.cwd(), { name: 'some-random-name'}),
+      tasks: tasks,
+      settings: {}
+    });
 
     return command.validateAndRun(['.'])
       .catch(function(reason) {
@@ -161,7 +197,13 @@ describe('init command', function() {
       }
     });
 
-    buildCommand();
+    var command = new InitCommand({
+      ui: ui,
+      analytics: analytics,
+      project: new Project(process.cwd(), { name: 'some-random-name'}),
+      tasks: tasks,
+      settings: {}
+    });
 
     return command.validateAndRun(['--name=provided-name'])
       .catch(function(reason) {
@@ -177,7 +219,13 @@ describe('init command', function() {
       }
     });
 
-    buildCommand();
+    var command = new InitCommand({
+      ui: ui,
+      analytics: analytics,
+      project: new Project(process.cwd(), { name: 'some-random-name'}),
+      tasks: tasks,
+      settings: {}
+    });
 
     return command.validateAndRun(['package.json', '--name=provided-name'])
       .catch(function(reason) {
@@ -193,7 +241,13 @@ describe('init command', function() {
       }
     });
 
-    buildCommand({ keywords: ['ember-addon'], name: 'some-random-name' });
+    var command = new InitCommand({
+      ui: ui,
+      analytics: analytics,
+      project: new Project(process.cwd(), { keywords: [ 'ember-addon' ], name: 'some-random-name'}),
+      tasks: tasks,
+      settings: {}
+    });
 
     return command.validateAndRun(['--name=provided-name'])
       .catch(function(reason) {

@@ -28,9 +28,6 @@ function ember(args) {
       isEmberCLIProject: function() {  // similate being inside or outside of a project
         return isWithinProject;
       },
-      hasDependencies: function() {
-        return true;
-      },
       blueprintLookupPaths: function() {
         return [];
       }
